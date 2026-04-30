@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All In Solutions — Every Service. One Vision.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --gold:#C9A84C;--gold-l:#E8C96A;--gold-dim:rgba(201,168,76,0.12);
+  --bg:#060606;--bg2:#0c0c0c;--bg3:#111;
+  --white:#F0EDE8;--muted:rgba(240,237,232,0.42);
+  --border:rgba(255,255,255,0.07);--border-g:rgba(201,168,76,0.22);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--white);font-family:'Outfit',sans-serif;overflow-x:hidden;cursor:none;}
+
+/* CURSOR */
+#cd,#cr{position:fixed;top:0;left:0;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);}
+#cd{width:7px;height:7px;background:var(--gold);transition:width .2s,height .2s,background .2s;}
+#cr{width:34px;height:34px;border:1px solid rgba(201,168,76,.5);transition:width .3s,height .3s,border-color .3s;}
+body.hov #cd{width:12px;height:12px;background:var(--gold-l);}
+body.hov #cr{width:54px;height:54px;border-color:var(--gold);}
+
+/* GRAIN */
+#grain{position:fixed;inset:0;z-index:9990;pointer-events:none;opacity:.03;
+background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+background-size:160px 160px;}
+
+/* PROGRESS */
+#prog{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold-l));z-index:9997;width:0;}
+
+/* PRELOADER */
+#pre{position:fixed;inset:0;background:var(--bg);z-index:9996;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2.2rem;}
+.pre-logo{opacity:0;transform:translateY(22px);transition:all .8s ease .2s;}
+.pre-logo.show{opacity:1;transform:translateY(0);}
+.pre-label{font-family:'Syne',sans-serif;font-size:11px;letter-spacing:5px;color:var(--gold);opacity:0;transition:opacity .8s ease .5s;}
+.pre-label.show{opacity:1;}
+.pre-line{width:180px;height:1px;background:var(--border);overflow:hidden;}
+.pre-bar{height:1px;background:linear-gradient(90deg,var(--gold),var(--gold-l));width:0;transition:width .05s linear;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:900;padding:1.6rem 3.5rem;display:flex;align-items:center;justify-content:space-between;transition:all .35s;}
+nav.stuck{background:rgba(6,6,6,.95);border-bottom:1px solid var(--border);padding:1rem 3.5rem;backdrop-filter:blur(16px);}
+.nlogo{display:flex;align-items:center;gap:12px;text-decoration:none;}
+.nwm{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;letter-spacing:2px;color:var(--white);}
+.nwm small{display:block;font-size:8px;font-weight:400;letter-spacing:4px;color:var(--gold);margin-top:2px;}
+.nlinks{display:flex;gap:2.5rem;list-style:none;}
+.nlinks a{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;font-weight:500;}
+.nlinks a:hover{color:var(--white);}
+.nbtn{font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;padding:10px 26px;border:1px solid var(--gold);color:var(--gold);background:transparent;cursor:none;transition:all .25s;font-weight:500;}
+.nbtn:hover{background:var(--gold);color:var(--bg);}
+
+/* HERO */
+#hero{height:100vh;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:0 3.5rem 6rem;overflow:hidden;}
+#three-c{position:absolute;inset:0;z-index:0;}
+.hover{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--gold);margin-bottom:1.6rem;z-index:2;position:relative;display:flex;align-items:center;gap:14px;opacity:0;transition:opacity 1s ease 2.2s;}
+.hover.vis{opacity:1;}
+.hover::before{content:'';width:36px;height:1px;background:var(--gold);}
+.htitle{font-family:'Syne',sans-serif;font-size:clamp(3.8rem,8.5vw,8rem);font-weight:800;line-height:.92;letter-spacing:-2px;z-index:2;position:relative;margin-bottom:2.2rem;}
+.hl{overflow:hidden;display:block;}
+.hl span{display:block;transform:translateY(115%);transition:transform 1s cubic-bezier(.16,1,.3,1);}
+.hl:nth-child(1) span{transition-delay:2.3s;}
+.hl:nth-child(2) span{transition-delay:2.48s;}
+.hl:nth-child(3) span{transition-delay:2.66s;}
+.hl span.vis{transform:translateY(0);}
+.gc{color:var(--gold);}
+.sc{-webkit-text-stroke:1.5px rgba(240,237,232,.28);color:transparent;}
+.hbot{display:flex;align-items:flex-end;justify-content:space-between;z-index:2;position:relative;opacity:0;transition:opacity 1s ease 3s;}
+.hbot.vis{opacity:1;}
+.hdesc{max-width:360px;font-size:15px;line-height:1.8;color:var(--muted);font-weight:300;}
+.hscroll{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.hscroll-lbl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);}
+.hline{width:1px;height:68px;background:var(--border);position:relative;overflow:hidden;}
+.hline::after{content:'';position:absolute;top:-100%;left:0;width:100%;height:100%;background:var(--gold);animation:drop 2s 3.8s ease infinite;}
+@keyframes drop{0%{top:-100%}100%{top:100%}}
+
+/* MARQUEE */
+.mqs{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.1rem 0;overflow:hidden;background:var(--bg2);}
+.mqt{display:flex;white-space:nowrap;animation:mq 30s linear infinite;}
+.mqi{font-family:'Syne',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);padding:0 2.8rem;display:flex;align-items:center;gap:2.8rem;}
+.mqd{width:3px;height:3px;background:var(--gold);border-radius:50%;flex-shrink:0;}
+@keyframes mq{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* SHARED */
+.sec{padding:7rem 3.5rem;}
+.stag{display:flex;align-items:center;gap:12px;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:3rem;}
+.stag::after{content:'';width:28px;height:1px;background:var(--gold);}
+.fu{opacity:0;transform:translateY(36px);transition:opacity .85s ease,transform .85s ease;}
+.fu.on{opacity:1;transform:translateY(0);}
+
+/* STATS */
+#stats{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0;}
+.statg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--border);}
+.stat{background:var(--bg2);padding:3.5rem 2.5rem;position:relative;overflow:hidden;transition:background .3s;}
+.stat::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold-l));transform:scaleX(0);transform-origin:left;transition:transform .45s ease;}
+.stat:hover::after{transform:scaleX(1);}
+.stat:hover{background:var(--bg3);}
+.statn{font-family:'Syne',sans-serif;font-size:clamp(2.8rem,4vw,4rem);font-weight:800;line-height:1;margin-bottom:.5rem;}
+.statn .ac{color:var(--gold);}
+.statl{font-size:12px;letter-spacing:1.5px;color:var(--muted);font-weight:300;}
+
+/* SERVICES */
+#services{background:var(--bg);}
+.srvhead{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:end;margin-bottom:5rem;}
+.srvhtitle{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,4.5vw,3.8rem);font-weight:800;line-height:1.05;}
+.srvhdesc{font-size:15px;color:var(--muted);line-height:1.8;font-weight:300;max-width:320px;}
+.srvlist{display:flex;flex-direction:column;}
+.srvrow{display:flex;align-items:stretch;border-top:1px solid var(--border);cursor:none;overflow:hidden;}
+.srvrow:last-child{border-bottom:1px solid var(--border);}
+.srvnum{font-family:'Syne',sans-serif;font-size:11px;letter-spacing:3px;color:var(--muted);writing-mode:vertical-rl;padding:2.5rem 2rem;border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;min-width:60px;transition:color .3s,background .3s;}
+.srvrow:hover .srvnum{color:var(--gold);background:var(--gold-dim);}
+.srvbody{flex:1;padding:2.5rem;display:flex;align-items:center;justify-content:space-between;gap:2rem;position:relative;overflow:hidden;}
+.srvbody::before{content:'';position:absolute;inset:0;background:var(--gold-dim);transform:translateX(-102%);transition:transform .5s cubic-bezier(.16,1,.3,1);}
+.srvrow:hover .srvbody::before{transform:translateX(0);}
+.srvm{position:relative;z-index:1;}
+.srvname{font-family:'Syne',sans-serif;font-size:clamp(1.4rem,2.5vw,2.1rem);font-weight:700;margin-bottom:.6rem;transition:color .3s;}
+.srvrow:hover .srvname{color:var(--gold);}
+.srvtags{display:flex;gap:8px;flex-wrap:wrap;}
+.srvtag{font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:4px 11px;border:1px solid var(--border-g);color:var(--muted);transition:color .3s,border-color .3s;}
+.srvrow:hover .srvtag{color:var(--gold);border-color:var(--gold);}
+.srvarr{font-size:1.8rem;color:var(--muted);position:relative;z-index:1;transition:transform .3s,color .3s;}
+.srvrow:hover .srvarr{transform:translate(8px,-8px);color:var(--gold);}
+
+/* MANIFESTO */
+#manifesto{background:var(--gold);padding:9rem 3.5rem;text-align:center;}
+.mftag{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:rgba(6,6,6,.45);margin-bottom:2rem;}
+.mftext{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,5.5vw,5rem);font-weight:800;line-height:1.08;color:var(--bg);max-width:960px;margin:0 auto;}
+.mftext em{font-style:normal;-webkit-text-stroke:2px var(--bg);color:transparent;}
+
+/* PROCESS */
+#process{background:var(--bg2);}
+.ptitle{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3.4rem);font-weight:800;margin-bottom:4rem;line-height:1.05;}
+.procg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);}
+.pstep{background:var(--bg2);padding:3rem 2rem;position:relative;overflow:hidden;transition:background .3s;}
+.pstep:hover{background:var(--bg3);}
+.pbgn{position:absolute;top:.5rem;right:.8rem;font-family:'Syne',sans-serif;font-size:6rem;font-weight:800;color:rgba(240,237,232,.03);line-height:1;pointer-events:none;}
+.picon{width:46px;height:46px;border:1px solid var(--border-g);display:flex;align-items:center;justify-content:center;margin-bottom:1.8rem;}
+.picon svg{width:18px;height:18px;stroke:var(--gold);fill:none;stroke-width:1.5px;}
+.pt{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;margin-bottom:.7rem;}
+.pd{font-size:13px;color:var(--muted);line-height:1.75;font-weight:300;}
+
+/* PRICING */
+#pricing{background:var(--bg);}
+.priceg{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);}
+.pcard{background:var(--bg2);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:background .3s;}
+.pcard.feat{background:var(--bg3);}
+.pcard:hover{background:var(--bg3);}
+.pbadge{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;display:flex;align-items:center;gap:8px;}
+.pbadge::before{content:'';width:20px;height:1px;background:var(--gold);}
+.pname{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;margin-bottom:1rem;}
+.pamt{font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;color:var(--white);line-height:1;margin-bottom:.4rem;}
+.pamt span{font-size:1rem;font-weight:400;color:var(--muted);}
+.pper{font-size:12px;color:var(--muted);margin-bottom:2rem;letter-spacing:1px;}
+.pdiv{height:1px;background:var(--border);margin-bottom:2rem;}
+.plist{list-style:none;display:flex;flex-direction:column;gap:1rem;margin-bottom:2.5rem;}
+.plist li{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px;font-weight:300;}
+.plist li::before{content:'';width:16px;height:1px;background:var(--gold);flex-shrink:0;}
+.pbtn{width:100%;font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;padding:14px;border:1px solid var(--border-g);color:var(--gold);background:transparent;cursor:none;transition:all .25s;font-weight:500;}
+.pcard.feat .pbtn{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+.pbtn:hover{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+.pfeatline{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold-l));}
+
+/* RESULTS */
+#results{background:var(--bg2);}
+.rtitle{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3.4rem);font-weight:800;line-height:1.05;margin-bottom:4rem;}
+.resg{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
+.rcard{background:var(--bg2);padding:3.5rem;position:relative;overflow:hidden;transition:background .3s;}
+.rcard:hover{background:var(--bg3);}
+.rind{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:2rem;}
+.rstat{font-family:'Syne',sans-serif;font-size:clamp(3.5rem,5.5vw,5rem);font-weight:800;line-height:1;margin-bottom:.6rem;}
+.rdesc{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:2.5rem;font-weight:300;}
+.rbb{height:1px;background:var(--border);position:relative;}
+.rb{position:absolute;top:0;left:0;height:1px;background:linear-gradient(90deg,var(--gold),var(--gold-l));width:0;transition:width 1.4s cubic-bezier(.16,1,.3,1) .2s;}
+.rcard.on .rb{width:var(--bw);}
+
+/* CTA FOOTER */
+#cta{background:var(--bg);border-top:1px solid var(--border);padding:9rem 3.5rem 4rem;display:flex;flex-direction:column;align-items:center;text-align:center;}
+.ctaover{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--gold);margin-bottom:2.5rem;}
+.ctatitle{font-family:'Syne',sans-serif;font-size:clamp(3.5rem,9vw,8rem);font-weight:800;line-height:.9;margin-bottom:3.5rem;letter-spacing:-2px;}
+.ctatitle .stk{-webkit-text-stroke:1.5px rgba(240,237,232,.28);color:transparent;}
+.ctabtn{display:inline-flex;align-items:center;gap:1.2rem;font-family:'Syne',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;padding:1.3rem 3.5rem;background:var(--gold);color:var(--bg);border:none;cursor:none;font-weight:700;margin-bottom:7rem;transition:background .25s,gap .3s;}
+.ctabtn:hover{background:var(--gold-l);gap:2rem;}
+.ctabtn svg{width:16px;height:16px;}
+.footbtm{width:100%;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:2rem;}
+.footcopy{font-size:12px;color:var(--muted);letter-spacing:.5px;}
+.footmark{font-family:'Syne',sans-serif;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);}
+</style>
+</head>
+<body>
+<div id="cd"></div>
+<div id="cr"></div>
+<div id="grain"></div>
+<div id="prog"></div>
+
+<!-- PRELOADER -->
+<div id="pre">
+  <div class="pre-logo" id="plogo">
+    <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+      <polygon points="26,3 49,46 3,46" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+      <polygon points="26,16 38,44 14,44" fill="#C9A84C" opacity="0.15"/>
+      <line x1="26" y1="3" x2="26" y2="46" stroke="#C9A84C" stroke-width="0.7" opacity="0.35"/>
+      <circle cx="26" cy="3" r="3" fill="#C9A84C"/>
+    </svg>
+  </div>
+  <div class="pre-line"><div class="pre-bar" id="pbar"></div></div>
+  <div class="pre-label" id="plbl">ALL IN SOLUTIONS</div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nlogo">
+    <svg width="32" height="32" viewBox="0 0 52 52" fill="none">
+      <polygon points="26,3 49,46 3,46" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+      <circle cx="26" cy="3" r="3" fill="#C9A84C"/>
+    </svg>
+    <div class="nwm">All In<small>Solutions</small></div>
+  </a>
+  <ul class="nlinks">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#results">Results</a></li>
+  </ul>
+  <button class="nbtn">Begin the Brief</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="three-c"></canvas>
+  <div class="hover" id="hover">India's Precision-First Digital Agency</div>
+  <h1 class="htitle">
+    <span class="hl"><span id="h1">We Don't</span></span>
+    <span class="hl"><span id="h2" class="sc">Play It</span></span>
+    <span class="hl"><span id="h3" class="gc">All In.</span></span>
+  </h1>
+  <div class="hbot" id="hbot">
+    <p class="hdesc">One agency. Every service. Zero compromise. We build brands that don't just exist — they dominate.</p>
+    <div class="hscroll">
+      <div class="hline"></div>
+      <span class="hscroll-lbl">Scroll</span>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="mqs">
+  <div class="mqt">
+    <div class="mqi">Web Development<div class="mqd"></div></div>
+    <div class="mqi">Digital Marketing<div class="mqd"></div></div>
+    <div class="mqi">Paid Advertising<div class="mqd"></div></div>
+    <div class="mqi">SEO & Growth<div class="mqd"></div></div>
+    <div class="mqi">Brand Identity<div class="mqd"></div></div>
+    <div class="mqi">Social Media<div class="mqd"></div></div>
+    <div class="mqi">E-Commerce<div class="mqd"></div></div>
+    <div class="mqi">Content Strategy<div class="mqd"></div></div>
+    <div class="mqi">Web Development<div class="mqd"></div></div>
+    <div class="mqi">Digital Marketing<div class="mqd"></div></div>
+    <div class="mqi">Paid Advertising<div class="mqd"></div></div>
+    <div class="mqi">SEO & Growth<div class="mqd"></div></div>
+    <div class="mqi">Brand Identity<div class="mqd"></div></div>
+    <div class="mqi">Social Media<div class="mqd"></div></div>
+    <div class="mqi">E-Commerce<div class="mqd"></div></div>
+    <div class="mqi">Content Strategy<div class="mqd"></div></div>
+  </div>
+</div>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="statg">
+    <div class="stat fu"><div class="statn"><span class="cnt" data-t="150">0</span><span class="ac">+</span></div><div class="statl">Brands Scaled</div></div>
+    <div class="stat fu" style="transition-delay:.08s"><div class="statn">₹<span class="cnt" data-t="50">0</span><span class="ac">Cr+</span></div><div class="statl">Revenue Generated</div></div>
+    <div class="stat fu" style="transition-delay:.16s"><div class="statn"><span class="cnt" data-t="98">0</span><span class="ac">%</span></div><div class="statl">Client Retention</div></div>
+    <div class="stat fu" style="transition-delay:.24s"><div class="statn"><span class="cnt" data-t="5">0</span><span class="ac">+</span></div><div class="statl">Years of Precision</div></div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" class="sec">
+  <div class="srvhead fu">
+    <div>
+      <div class="stag">What We Do</div>
+      <h2 class="srvhtitle">Every weapon<br>in the arsenal.</h2>
+    </div>
+    <p class="srvhdesc">From the first pixel to the last conversion, we own the entire journey — so you never split your vision across five agencies.</p>
+  </div>
+  <div class="srvlist">
+    <div class="srvrow fu"><div class="srvnum">01</div><div class="srvbody"><div class="srvm"><div class="srvname">Web Development & Design</div><div class="srvtags"><span class="srvtag">UI/UX</span><span class="srvtag">React</span><span class="srvtag">CMS</span><span class="srvtag">E-Commerce</span></div></div><div class="srvarr">↗</div></div></div>
+    <div class="srvrow fu" style="transition-delay:.05s"><div class="srvnum">02</div><div class="srvbody"><div class="srvm"><div class="srvname">Digital Marketing</div><div class="srvtags"><span class="srvtag">Strategy</span><span class="srvtag">Analytics</span><span class="srvtag">Funnels</span><span class="srvtag">Email</span></div></div><div class="srvarr">↗</div></div></div>
+    <div class="srvrow fu" style="transition-delay:.1s"><div class="srvnum">03</div><div class="srvbody"><div class="srvm"><div class="srvname">Paid Advertising</div><div class="srvtags"><span class="srvtag">Google Ads</span><span class="srvtag">Meta Ads</span><span class="srvtag">YouTube</span><span class="srvtag">Programmatic</span></div></div><div class="srvarr">↗</div></div></div>
+    <div class="srvrow fu" style="transition-delay:.15s"><div class="srvnum">04</div><div class="srvbody"><div class="srvm"><div class="srvname">SEO & Organic Growth</div><div class="srvtags"><span class="srvtag">Technical SEO</span><span class="srvtag">Content</span><span class="srvtag">Link Building</span></div></div><div class="srvarr">↗</div></div></div>
+    <div class="srvrow fu" style="transition-delay:.2s"><div class="srvnum">05</div><div class="srvbody"><div class="srvm"><div class="srvname">Brand Identity</div><div class="srvtags"><span class="srvtag">Logo</span><span class="srvtag">Visual System</span><span class="srvtag">Guidelines</span></div></div><div class="srvarr">↗</div></div></div>
+    <div class="srvrow fu" style="transition-delay:.25s"><div class="srvnum">06</div><div class="srvbody"><div class="srvm"><div class="srvname">Social Media Management</div><div class="srvtags"><span class="srvtag">Content</span><span class="srvtag">Community</span><span class="srvtag">Reels</span><span class="srvtag">Growth</span></div></div><div class="srvarr">↗</div></div></div>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<section id="manifesto">
+  <div class="mftag fu">Our Philosophy</div>
+  <p class="mftext fu">Most agencies play it safe.<br>We go <em>all in</em> — on your brief,<br>on your vision, on your growth.</p>
+</section>
+
+<!-- PROCESS -->
+<section id="process" class="sec">
+  <div class="stag fu">How We Work</div>
+  <h2 class="ptitle fu">Four moves.<br>Every time.</h2>
+  <div class="procg">
+    <div class="pstep fu"><div class="pbgn">01</div><div class="picon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg></div><div class="pt">Dissect</div><div class="pd">We audit your market, competitors, and audience before touching a single deliverable.</div></div>
+    <div class="pstep fu" style="transition-delay:.08s"><div class="pbgn">02</div><div class="picon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="pt">Architect</div><div class="pd">A bespoke strategy is built — channel by channel, rupee by rupee — aligned to one goal.</div></div>
+    <div class="pstep fu" style="transition-delay:.16s"><div class="pbgn">03</div><div class="picon"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="pt">Execute</div><div class="pd">Deployed with obsessive precision. Every asset, ad, and line of code built to convert.</div></div>
+    <div class="pstep fu" style="transition-delay:.24s"><div class="pbgn">04</div><div class="picon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="pt">Scale</div><div class="pd">We study what wins, double down ruthlessly, and turn results into a compounding machine.</div></div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="sec">
+  <div class="stag fu">Packages</div>
+  <h2 class="ptitle fu" style="margin-bottom:4rem">Pick your<br>launchpad.</h2>
+  <div class="priceg">
+    <div class="pcard fu"><div class="pbadge">Starter</div><div class="pname">Foundation</div><div class="pamt">₹14,999<span>/mo</span></div><div class="pper">Ideal for new brands</div><div class="pdiv"></div><ul class="plist"><li>Professional Website (5 pages)</li><li>Basic SEO Setup</li><li>Social Media (2 platforms)</li><li>Monthly Report</li><li>Email Support</li></ul><button class="pbtn">Begin Foundation</button></div>
+    <div class="pcard feat fu" style="transition-delay:.08s"><div class="pfeatline"></div><div class="pbadge">Most Chosen</div><div class="pname">Ascent</div><div class="pamt">₹34,999<span>/mo</span></div><div class="pper">For brands ready to dominate</div><div class="pdiv"></div><ul class="plist"><li>Everything in Foundation</li><li>Paid Ads (Google + Meta)</li><li>Full SEO & Content Strategy</li><li>Social Media (4 platforms)</li><li>Brand Identity Package</li><li>Bi-weekly Strategy Calls</li><li>Priority Support</li></ul><button class="pbtn">Begin Ascent</button></div>
+    <div class="pcard fu" style="transition-delay:.16s"><div class="pbadge">Full Power</div><div class="pname">All In</div><div class="pamt">₹74,999<span>/mo</span></div><div class="pper">Total market domination</div><div class="pdiv"></div><ul class="plist"><li>Everything in Ascent</li><li>Custom Web App / E-Commerce</li><li>All Ad Channels + YouTube</li><li>Dedicated Account Manager</li><li>Full Brand Overhaul</li><li>24/7 Priority Line</li></ul><button class="pbtn">Go All In</button></div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results" class="sec">
+  <div class="stag fu">Proof of Work</div>
+  <h2 class="rtitle fu">Numbers that<br>don't lie.</h2>
+  <div class="resg">
+    <div class="rcard fu"><div class="rind">E-Commerce — Fashion</div><div class="rstat">4.2×</div><div class="rdesc">ROAS achieved in 90 days through full-funnel Meta strategy and landing page overhaul.</div><div class="rbb"><div class="rb" style="--bw:84%"></div></div></div>
+    <div class="rcard fu" style="transition-delay:.08s"><div class="rind">SaaS — B2B</div><div class="rstat">312%</div><div class="rdesc">Organic traffic growth in 6 months via technical SEO and content architecture rebuild.</div><div class="rbb"><div class="rb" style="--bw:91%"></div></div></div>
+    <div class="rcard fu" style="transition-delay:.12s"><div class="rind">Local Business — F&B</div><div class="rstat">₹80L</div><div class="rdesc">Revenue attributed to digital campaigns in Year 1 from zero online presence.</div><div class="rbb"><div class="rb" style="--bw:72%"></div></div></div>
+    <div class="rcard fu" style="transition-delay:.2s"><div class="rind">D2C — Health</div><div class="rstat">68%</div><div class="rdesc">Drop in cost-per-acquisition after restructuring ad account and creative rotation.</div><div class="rbb"><div class="rb" style="--bw:68%"></div></div></div>
+  </div>
+</section>
+
+<!-- CTA FOOTER -->
+<section id="cta">
+  <div class="ctaover fu">You've seen what we do</div>
+  <h2 class="ctatitle fu">Ready to go<br><span class="stk">All In?</span></h2>
+  <button class="ctabtn fu">Begin the Brief <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+  <div class="footbtm">
+    <svg width="24" height="24" viewBox="0 0 52 52" fill="none"><polygon points="26,3 49,46 3,46" stroke="#C9A84C" stroke-width="1.5" fill="none"/><circle cx="26" cy="3" r="3" fill="#C9A84C"/></svg>
+    <div class="footmark">All In Solutions</div>
+    <div class="footcopy">© 2025 — All rights reserved</div>
+  </div>
+</section>
+
+<script>
+// CURSOR
+const cd=document.getElementById('cd'),cr=document.getElementById('cr');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cd.style.left=mx+'px';cd.style.top=my+'px';});
+(function loop(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;cr.style.left=rx+'px';cr.style.top=ry+'px';requestAnimationFrame(loop);})();
+document.querySelectorAll('a,button,.srvrow,.stat,.rcard,.pcard,.pstep').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hov'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));
+});
+
+// PRELOADER
+const pbar=document.getElementById('pbar');
+let pp=0;
+const pt=setInterval(()=>{pp+=Math.random()*4+1.5;if(pp>=100){pp=100;clearInterval(pt);}pbar.style.width=pp+'%';},45);
+setTimeout(()=>{
+  document.getElementById('plogo').classList.add('show');
+  document.getElementById('plbl').classList.add('show');
+},100);
+setTimeout(()=>{
+  const pre=document.getElementById('pre');
+  pre.style.transition='opacity .9s ease';
+  pre.style.opacity='0';
+  setTimeout(()=>{pre.style.display='none';},900);
+  // Hero reveal
+  setTimeout(()=>{
+    document.getElementById('hover').classList.add('vis');
+    document.getElementById('hbot').classList.add('vis');
+    document.getElementById('h1').classList.add('vis');
+    document.getElementById('h2').classList.add('vis');
+    document.getElementById('h3').classList.add('vis');
+  },100);
+},2400);
+
+// SCROLL
+window.addEventListener('scroll',()=>{
+  document.getElementById('prog').style.width=(window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%';
+  document.getElementById('nav').classList.toggle('stuck',window.scrollY>80);
+});
+
+// THREE.JS
+(function(){
+  const canvas=document.getElementById('three-c');
+  const W=canvas.offsetWidth,H=canvas.offsetHeight;
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(W,H);
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(60,W/H,.1,100);
+  camera.position.z=6;
+
+  const gold=0xC9A84C,goldL=0xE8C96A;
+
+  // Main icosahedron
+  const g1=new THREE.IcosahedronGeometry(2.4,1);
+  const w1=new THREE.LineSegments(new THREE.EdgesGeometry(g1),new THREE.LineBasicMaterial({color:gold,transparent:true,opacity:.4}));
+  scene.add(w1);
+
+  // Inner octahedron
+  const g2=new THREE.OctahedronGeometry(1.1,0);
+  const w2=new THREE.LineSegments(new THREE.EdgesGeometry(g2),new THREE.LineBasicMaterial({color:goldL,transparent:true,opacity:.18}));
+  scene.add(w2);
+
+  // Particles
+  const pct=140,pa=new Float32Array(pct*3);
+  for(let i=0;i<pct*3;i++) pa[i]=(Math.random()-.5)*14;
+  const pg=new THREE.BufferGeometry();
+  pg.setAttribute('position',new THREE.BufferAttribute(pa,3));
+  scene.add(new THREE.Points(pg,new THREE.PointsMaterial({color:gold,size:.045,transparent:true,opacity:.55})));
+
+  let tmx=0,tmy=0;
+  document.addEventListener('mousemove',e=>{tmx=(e.clientX/window.innerWidth-.5)*1.5;tmy=(e.clientY/window.innerHeight-.5)*1.5;});
+  window.addEventListener('resize',()=>{const rw=canvas.offsetWidth,rh=canvas.offsetHeight;renderer.setSize(rw,rh);camera.aspect=rw/rh;camera.updateProjectionMatrix();});
+
+  (function anim(){
+    requestAnimationFrame(anim);
+    w1.rotation.y+=.003;w1.rotation.x+=.001;
+    w2.rotation.y-=.006;w2.rotation.z+=.003;
+    w1.rotation.y+=(tmx-w1.rotation.y)*.018;
+    w1.rotation.x+=(tmy-w1.rotation.x)*.018;
+    renderer.render(scene,camera);
+  })();
+})();
+
+// INTERSECTION OBSERVER
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');}});
+},{threshold:.12});
+document.querySelectorAll('.fu,.rcard').forEach(el=>obs.observe(el));
+
+// COUNTERS
+const cobs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.querySelectorAll('.cnt').forEach(c=>{
+        const tgt=+c.dataset.t;let cur=0;
+        const step=tgt/(1800/16);
+        const ti=setInterval(()=>{cur+=step;if(cur>=tgt){cur=tgt;clearInterval(ti);}c.textContent=Math.floor(cur);},16);
+      });
+      cobs.unobserve(e.target);
+    }
+  });
+},{threshold:.25});
+document.querySelectorAll('.stat').forEach(s=>cobs.observe(s));
+</script>
+</body>
+</html>
